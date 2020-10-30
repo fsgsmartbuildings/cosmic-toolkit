@@ -1,0 +1,25 @@
+from setuptools import setup, find_packages
+
+VERSION = "0.1.0"
+
+
+with open("README.md", "r", encoding="utf-8") as f:
+    readme = f.read()
+
+setup(
+    name="cosmic-py",
+    version=VERSION,
+    long_description=readme,
+    long_description_content_type="text/markdown",
+    install_requires=[],
+    packages=find_packages(),
+    include_package_data=True,
+    python_requires=">=3.7",
+    classifiers=[
+        "Development Status :: 3 - Alpha",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+    ]
+)
