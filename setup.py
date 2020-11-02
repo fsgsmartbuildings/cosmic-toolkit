@@ -11,7 +11,9 @@ setup(
     version=VERSION,
     long_description=readme,
     long_description_content_type="text/markdown",
-    install_requires=[],
+    install_requires=[
+        "pydantic==1.7.1",
+    ],
     packages=find_packages(),
     include_package_data=True,
     python_requires=">=3.7",
