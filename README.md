@@ -1,7 +1,11 @@
 # Cosmic Toolkit
-Cosmic Toolkit is an opinionated toolkit to speed up the development of complex apps.
+<a href="https://github.com/RonquilloAeon/migri/actions" target="_blank">
+    <img src="https://github.com/fsgsmartbuildings/cosmic-toolkit/workflows/Tests/badge.svg" alt="Tests workflow status">
+</a>
 
-It's inspired by [Cosmic Python](https://www.cosmicpython.com/).
+**Cosmic Toolkit is an opinionated toolkit to speed up the development of complex apps.**
+
+This toolkit is inspired by [Cosmic Python](https://www.cosmicpython.com/).
 
 **Currently in alpha, so proceed with caution!**
 
