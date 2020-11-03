@@ -25,4 +25,4 @@ def lint(session):
 def test(session):
     session.install("-r", "test-requirements.txt")
 
-    session.run("pytest", "--cov=migri", *session.posargs)
+    session.run("pytest", "--cov=src", *session.posargs)
