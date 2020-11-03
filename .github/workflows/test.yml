@@ -1,0 +1,18 @@
+---
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  tests:
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - uses: actions/checkout@1.0.0
+      - uses: excitedleigh/setup-nox@1.0.0
+      - name: "Run Linter"
+        run: nox -e lint
+      - name: "Check formatting"
+        run: nox -e format -- --check
+      - name: "Test"
+        run: nox -e test
