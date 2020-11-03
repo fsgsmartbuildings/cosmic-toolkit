@@ -1,4 +1,4 @@
-from typing import Dict, Type
+from typing import Any, Dict, Type
 
 import pytest
 
@@ -8,11 +8,19 @@ from src.unit_of_work import BaseUnitOfWork
 
 
 class EntityA(Entity):
-    ...
+    def init(cls, *args, **kwargs) -> "Entity":
+        return cls()
+
+    def dict(self) -> Dict[str, Any]:
+        return {}
 
 
 class EntityB(EntityA):
-    ...
+    def init(cls, *args, **kwargs) -> "Entity":
+        return cls()
+
+    def dict(self) -> Dict[str, Any]:
+        return {}
 
 
 class ATriggered(Event):

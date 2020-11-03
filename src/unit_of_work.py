@@ -1,10 +1,11 @@
+from abc import ABCMeta, abstractmethod
 from typing import Generator, List
 
 from src.models import Event
 from src.repository import AbstractRepository
 
 
-class BaseUnitOfWork:
+class BaseUnitOfWork(metaclass=ABCMeta):
     def __init__(self, *args, **kwargs):
         """Instantiate Unit of Work - arguments are passed into constructors of
         repositories"""
@@ -38,8 +39,10 @@ class BaseUnitOfWork:
                 while entity.events:
                     yield entity.events.pop(0)
 
+    @abstractmethod
     async def commit(self):
-        raise NotImplementedError
+        ...
 
+    @abstractmethod
     async def rollback(self):
-        raise NotImplementedError
+        ...
