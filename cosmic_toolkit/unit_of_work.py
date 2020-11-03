@@ -1,8 +1,8 @@
 from abc import ABCMeta, abstractmethod
 from typing import Generator, List
 
-from src.models import Event
-from src.repository import AbstractRepository
+from cosmic_toolkit.models import Event
+from cosmic_toolkit.repository import AbstractRepository
 
 
 class BaseUnitOfWork(metaclass=ABCMeta):

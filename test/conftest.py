@@ -2,9 +2,12 @@ from typing import Any, Dict, Type
 
 import pytest
 
-from src.models import Entity, Event
-from src.repository import AbstractRepository
-from src.unit_of_work import BaseUnitOfWork
+from cosmic_toolkit import (
+    AbstractRepository,
+    BaseUnitOfWork,
+    Entity,
+    Event,
+)
 
 
 class EntityA(Entity):

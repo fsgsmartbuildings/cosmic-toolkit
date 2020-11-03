@@ -2,7 +2,7 @@ import logging
 from inspect import Parameter, signature
 from typing import Any, Callable, Dict, List, Optional, Tuple, Type
 
-from src.models import Event
+from cosmic_toolkit.models import Event
 
 logger = logging.getLogger(__name__)
 

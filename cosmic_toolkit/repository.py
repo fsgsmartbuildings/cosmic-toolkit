@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from typing import Any, Type
 
-from src.models import Entity
+from cosmic_toolkit.models import Entity
 
 
 class AbstractRepository(metaclass=ABCMeta):

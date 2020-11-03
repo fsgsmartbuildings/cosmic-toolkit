@@ -1,7 +1,6 @@
 import pytest
 
-from src.models import Entity
-from src.repository import AbstractRepository
+from cosmic_toolkit import AbstractRepository, Entity
 
 pytestmark = pytest.mark.asyncio
 
