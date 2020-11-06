@@ -26,3 +26,6 @@ class Entity(metaclass=ABCMeta):
     @abstractmethod
     def dict(self) -> Dict[str, Any]:
         ...
+
+    class DoesNotExist(Exception):
+        ...
