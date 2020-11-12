@@ -14,6 +14,9 @@ class AbstractRepository(metaclass=ABCMeta):
 
         cls._entity_type = entity_type
 
+    def __repr__(self):
+        return f"<{self.__class__.__name__}, entity_type={self._entity_type.__name__}>"
+
     def _check_entity_type(self, entity):
         if not type(entity) == self._entity_type:
             raise TypeError(f"Expecting entity of type {self._entity_type.__name__}")
