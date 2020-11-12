@@ -22,6 +22,10 @@ class MessageBus:
         self._ignore_missing_handlers = ignore_missing_handlers
         self._unit_of_work_kwarg_name = unit_of_work_kwarg_name
 
+    @property
+    def dependencies(self) -> Dict[str, Any]:
+        return self._dependencies
+
     @staticmethod
     def _cull_dependencies(
         parameters: Dict[str, Parameter], dependencies: Dict[str, Any]
@@ -93,6 +97,9 @@ class MessageBus:
                 events.extend(uow.collect_new_events())
 
         return events
+
+    def add_dependencies(self, **dependencies):
+        self._dependencies.update(dependencies)
 
     async def handle(self, event: Event, **dependencies):
         queue = [event]

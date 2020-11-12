@@ -28,10 +28,19 @@ class BaseUnitOfWork(metaclass=ABCMeta):
         # This is here as a fallback
         await self.rollback()
 
+    def __eq__(self, other: "BaseUnitOfWork") -> bool:
+        return self.__repr__() == other.__repr__()
+
     def __getattr__(self, item: str) -> AbstractRepository:
         # Enable accessing repositories as attributes
         # E.g. uow.customers.add()
         return self._repositories[item]
+
+    def __repr__(self):
+        return (
+            f"<{self.__class__.__name__}, "
+            f"repositories={[r.__repr__() for r in self._repositories.values()]}>"
+        )
 
     def collect_new_events(self) -> Generator[List[Event], None, None]:
         for repository in self._repositories.values():

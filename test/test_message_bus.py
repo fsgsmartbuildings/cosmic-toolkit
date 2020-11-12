@@ -140,6 +140,22 @@ async def test_message_bus_handle():
     assert log.log[1] == (event_b_id, event_b.message)
 
 
+def test_message_bus_add_dependencies():
+    log = TelemetryLog()
+    uow = UnitOfWork()
+
+    message_bus = MessageBus({}, uow=uow)
+
+    assert len(message_bus.dependencies.values()) == 1
+    assert message_bus.dependencies["uow"] == UnitOfWork()
+
+    # Now add a dependency
+    message_bus.add_dependencies(log=log)
+
+    assert len(message_bus.dependencies.values()) == 2
+    assert message_bus.dependencies["log"] == log
+
+
 async def test_message_bus_handle_ignore_missing_handler():
     message_bus = MessageBus({}, ignore_missing_handlers=True)
     event_a = TelemetryReceived(message="test123")
