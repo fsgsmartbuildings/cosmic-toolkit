@@ -1,16 +1,33 @@
 import pytest
 
+from cosmic_toolkit import AbstractRepository
+
 pytestmark = pytest.mark.asyncio
 
 
-def test_base_unit_of_work_repository_attributes(test_unit_of_work):
-    # Ensure repos can be accessed as attributes
+async def test_base_unit_of_work_repository_attributes(test_unit_of_work):
     uow = test_unit_of_work()
 
-    assert hasattr(uow, "a_items")
-    assert hasattr(uow, "b_items")
+    # Ensure repos can be accessed as attributes, but only after the uow is used as a
+    # context manager
+    assert not hasattr(uow, "a_items")
+    assert not hasattr(uow, "b_items")
 
-    assert isinstance(uow.a_items.seen, set)
+    with pytest.raises(AttributeError) as e:
+        uow.a_items
+
+    assert str(e.value) == "TestUnitOfWork does not have 'a_items' repository"
+
+    # Now we can access repositories
+    async with uow:
+        assert hasattr(uow, "a_items")
+        assert hasattr(uow, "b_items")
+
+        assert isinstance(uow.a_items.seen, set)
+
+    # uow has been used as context manager so now we expect repositories to be
+    # instantiated
+    assert isinstance(uow.a_items, AbstractRepository)
 
 
 async def test_base_unit_of_work_collect_new_events(
