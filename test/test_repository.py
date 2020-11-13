@@ -38,3 +38,26 @@ async def test_abstract_repository_add_update_enforces_entity(
 
     assert str(e.value) == "Expecting entity of type EntityA"
     assert list(repository_a.seen)[0] == entity_a
+
+
+def test_abstract_repository_subclass_kwargs(test_entities):
+    """Ensure that class-level keyword arguments are captured and stored so they can
+    be used by subclasses"""
+
+    class ARepository(
+        AbstractRepository,
+        entity_type=test_entities["EntityA"],
+        collection_name="test",
+    ):
+        async def _add(self, entity: Entity):
+            ...
+
+        async def _get(self, id: str) -> Entity:
+            ...
+
+        async def _update(self, entity: Entity):
+            ...
+
+    a_repository = ARepository()
+
+    assert a_repository._init_kwargs == {"collection_name": "test"}

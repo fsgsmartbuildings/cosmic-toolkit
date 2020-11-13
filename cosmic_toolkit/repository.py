@@ -13,6 +13,7 @@ class AbstractRepository(metaclass=ABCMeta):
             raise TypeError(f"Entity must inherit from {Entity.__name__}")
 
         cls._entity_type = entity_type
+        cls._init_kwargs = kwargs
 
     def __repr__(self):
         return f"<{self.__class__.__name__}, entity_type={self._entity_type.__name__}>"

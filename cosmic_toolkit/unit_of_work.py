@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Generator, List
+from typing import Dict, Generator, List
 
 from cosmic_toolkit.models import Event
 from cosmic_toolkit.repository import AbstractRepository
@@ -9,18 +9,24 @@ class BaseUnitOfWork(metaclass=ABCMeta):
     def __init__(self, *args, **kwargs):
         """Instantiate Unit of Work - arguments are passed into constructors of
         repositories"""
-        # Instantiate repositories
-        self._repositories = {
-            k: v(*args, **kwargs) for k, v in self._repositories.items()
-        }
+        self._args = args
+        self._kwargs = kwargs
+        self._repositories: Dict[str, AbstractRepository] = {}
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__()
-        cls._repositories = {
+        cls._repository_classes = {
             k: v for k, v in kwargs.items() if issubclass(v, AbstractRepository)
         }
 
     async def __aenter__(self) -> "BaseUnitOfWork":
+        # Instantiate repositories if they haven't been instantiated
+        if not self._repositories:
+            self._repositories = {
+                k: v(*self._args, **self._kwargs)
+                for k, v in self._repository_classes.items()
+            }
+
         return self
 
     async def __aexit__(self, exc_type, exc, tb):
@@ -34,7 +40,12 @@ class BaseUnitOfWork(metaclass=ABCMeta):
     def __getattr__(self, item: str) -> AbstractRepository:
         # Enable accessing repositories as attributes
         # E.g. uow.customers.add()
-        return self._repositories[item]
+        try:
+            return self._repositories[item]
+        except KeyError:
+            raise AttributeError(
+                f"{self.__class__.__name__} does not have {item!r} repository"
+            )
 
     def __repr__(self):
         return (
