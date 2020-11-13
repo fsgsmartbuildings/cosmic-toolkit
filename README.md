@@ -9,6 +9,9 @@ This toolkit is inspired by [Cosmic Python](https://www.cosmicpython.com/).
 
 **Currently in alpha, so proceed with caution!**
 
+## Installation
+`pip install cosmic-toolkit`
+
 ## Example usage
 
 There's a fairly complete example of how to use this package in
