@@ -1,29 +1,49 @@
-from typing import Any, Dict, Type
+from typing import Dict, Type
 
 import pytest
 
 from cosmic_toolkit import (
     AbstractRepository,
+    AggregateRoot,
     BaseUnitOfWork,
     Entity,
     Event,
 )
+from cosmic_toolkit.types import NormalDict
 
 
-class EntityA(Entity):
-    def init(cls, *args, **kwargs) -> "Entity":
-        return cls()
+class EntityA(AggregateRoot, Entity):
+    def __init__(self, a: str):
+        super().__init__()
+        self._a = a
 
-    def dict(self) -> Dict[str, Any]:
-        return {}
+    @classmethod
+    def init(cls, a: str) -> "AggregateRoot":
+        return cls(a)
+
+    @property
+    def a(self) -> str:
+        return self._a
+
+    def dict(self) -> NormalDict:
+        return {"a": self._a}
 
 
-class EntityB(EntityA):
-    def init(cls, *args, **kwargs) -> "Entity":
-        return cls()
+class EntityB(AggregateRoot, Entity):
+    def __init__(self, a: str):
+        super().__init__()
+        self._a = a
 
-    def dict(self) -> Dict[str, Any]:
-        return {}
+    @classmethod
+    def init(cls, a: str) -> "AggregateRoot":
+        return cls(a)
+
+    @property
+    def a(self) -> str:
+        return self._a
+
+    def dict(self) -> NormalDict:
+        return {"a": self._a}
 
 
 class ATriggered(Event):

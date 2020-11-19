@@ -37,11 +37,11 @@ async def test_base_unit_of_work_collect_new_events(
 
     # Add entities
     async with uow:
-        entity_a = test_entities["EntityA"]()
-        entity_a._events.append(test_events["ATriggered"]())
-        entity_a._events.append(test_events["BTriggered"]())
-        entity_b = test_entities["EntityB"]()
-        entity_b._events.append(test_events["BTriggered"]())
+        entity_a = test_entities["EntityA"].init("hello")
+        entity_a._add_event(test_events["ATriggered"]())
+        entity_a._add_event(test_events["BTriggered"]())
+        entity_b = test_entities["EntityB"].init("world")
+        entity_b._add_event(test_events["BTriggered"]())
 
         await uow.a_items.add(entity_a)
         await uow.b_items.add(entity_b)
@@ -55,3 +55,6 @@ async def test_base_unit_of_work_collect_new_events(
     assert isinstance(events[0], test_events["ATriggered"])
     assert isinstance(events[1], test_events["BTriggered"])
     assert isinstance(events[2], test_events["BTriggered"])
+
+    # Events should be cleared out
+    assert len(list(uow.collect_new_events())) == 0
