@@ -1,14 +1,16 @@
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 import pytest
 
 from cosmic_toolkit import (
     AbstractRepository,
+    AggregateRoot,
     BaseUnitOfWork,
     Entity,
     Event,
     MessageBus,
 )
+from cosmic_toolkit.types import NormalDict
 
 pytestmark = pytest.mark.asyncio
 
@@ -17,7 +19,7 @@ class TelemetryReceived(Event):
     message: str
 
 
-class Telemetry(Entity):
+class Telemetry(AggregateRoot):
     def __init__(self, id: int, message: str):
         super().__init__()
 
@@ -39,7 +41,7 @@ class Telemetry(Entity):
     def message(self) -> str:
         return self._message
 
-    def dict(self) -> Dict[str, Any]:
+    def dict(self) -> NormalDict:
         return {
             "id": self._id,
             "message": self._message,
@@ -52,13 +54,13 @@ class TelemetryRepository(AbstractRepository, entity_type=Telemetry):
 
         self._items = {}
 
-    async def _add(self, entity: Entity):
+    async def _add(self, entity: Telemetry):
         self._items[hash(entity.message)] = entity
 
-    async def _get(self, id: str) -> Entity:
+    async def _get(self, id: str) -> Telemetry:
         return self._items[id]
 
-    async def _update(self, entity: Entity):
+    async def _update(self, entity: Telemetry):
         return self._add(entity)
 
 

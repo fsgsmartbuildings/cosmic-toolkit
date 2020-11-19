@@ -56,8 +56,7 @@ class BaseUnitOfWork(metaclass=ABCMeta):
     def collect_new_events(self) -> Generator[List[Event], None, None]:
         for repository in self._repositories.values():
             for entity in repository.seen:
-                while entity.events:
-                    yield entity.events.pop(0)
+                yield from entity.events
 
     @abstractmethod
     async def commit(self):

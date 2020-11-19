@@ -1,21 +1,40 @@
 import inspect
+import json
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict, List
+from typing import Generator, List
 
 from pydantic import BaseModel
+
+from cosmic_toolkit.types import NormalDict
 
 
 class Event(BaseModel):
     ...
 
 
-class Entity(metaclass=ABCMeta):
+class AggregateRoot:
     _events: List[Event]
 
     def __init__(self, *args, **kwargs):
         self._events = []
 
-    def __repr__(self):
+    @property
+    def events(self) -> Generator[Event, None, None]:
+        while self._events:
+            yield self._events.pop(0)
+
+    def _add_event(self, event: Event):
+        self._events.append(event)
+
+
+class Entity(metaclass=ABCMeta):
+    def __eq__(self, other: "Entity") -> bool:
+        return self.dict() == other.dict()
+
+    def __hash__(self) -> int:
+        return hash(json.dumps(self.dict()).encode("utf-8"))
+
+    def __repr__(self) -> str:
         """Create entity representation. Searches for entity properties to create
         repr"""
         props = []
@@ -54,12 +73,8 @@ class Entity(metaclass=ABCMeta):
     def init(cls, *args, **kwargs) -> "Entity":
         ...
 
-    @property
-    def events(self) -> List[Event]:
-        return self._events
-
     @abstractmethod
-    def dict(self) -> Dict[str, Any]:
+    def dict(self) -> NormalDict:
         ...
 
     class DoesNotExist(Exception):
