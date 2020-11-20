@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.4.1] - 20 November 2020
+### Added
+- `.json()` method to `Entity`
+
+### Fixed
+- Swapped the standard JSON dumps function for orjson.dumps to get datetime and UUID
+  serialization support out-of-the-box
+
 ## [0.4.0] - 19 November 2020
 ### Added
 - **Breaking change!** Added `AggregateRoot` that aggregate roots need to inherit from,
