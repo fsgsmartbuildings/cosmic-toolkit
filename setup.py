@@ -12,6 +12,7 @@ setup(
     long_description=readme,
     long_description_content_type="text/markdown",
     install_requires=[
+        "orjson==3.4.3",
         "pydantic==1.7.1",
     ],
     packages=find_packages(),

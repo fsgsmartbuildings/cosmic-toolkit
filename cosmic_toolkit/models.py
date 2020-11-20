@@ -1,11 +1,11 @@
 import inspect
-import json
 from abc import ABCMeta, abstractmethod
-from typing import Generator, List
+from typing import Any, Generator, List, Optional, Type
 
+from orjson import dumps
 from pydantic import BaseModel
 
-from cosmic_toolkit.types import NormalDict
+from cosmic_toolkit.types import JSONSerializer, NormalDict
 
 
 class Event(BaseModel):
@@ -27,12 +27,26 @@ class AggregateRoot:
         self._events.append(event)
 
 
+class DefaultSerializer:
+    def __call__(self, obj: Any):
+        raise TypeError
+
+
 class Entity(metaclass=ABCMeta):
     def __eq__(self, other: "Entity") -> bool:
         return self.dict() == other.dict()
 
     def __hash__(self) -> int:
-        return hash(json.dumps(self.dict()).encode("utf-8"))
+        # Making entities hashable enables using sets which is necessary for
+        # BaseUnitOfWork to collect domain events
+        return hash(self.json())
+
+    def __init_subclass__(
+        cls, default_json_serializer: Optional[Type[JSONSerializer]] = None, **kwargs
+    ):
+        cls._default_json_serializer = (
+            default_json_serializer if default_json_serializer else DefaultSerializer
+        )
 
     def __repr__(self) -> str:
         """Create entity representation. Searches for entity properties to create
@@ -76,6 +90,9 @@ class Entity(metaclass=ABCMeta):
     @abstractmethod
     def dict(self) -> NormalDict:
         ...
+
+    def json(self) -> bytes:
+        return dumps(self.dict(), default=self._default_json_serializer())
 
     class DoesNotExist(Exception):
         ...
