@@ -1,5 +1,6 @@
+from datetime import datetime
 from random import randint
-from typing import List, Optional
+from typing import Any, List, Optional, Tuple
 from uuid import UUID, uuid4
 
 import pytest
@@ -8,9 +9,7 @@ from cosmic_toolkit import AggregateRoot, Entity, Event
 from cosmic_toolkit.types import NormalDict
 
 # Aggregates consist of one or more child entities
-#
 # We need an aggregate root to create an aggregate
-#
 # Aggregates capture domain events
 
 
@@ -284,6 +283,33 @@ def test_aggregate_root():
 
 
 # Sample entities and tests
+# Test basic entity functionality sans AggregateRoot
+
+
+class Sensor(Entity):
+    def __init__(self, id: UUID, name: str, installed_on: datetime):
+        self._id = id
+        self._name = name
+        self._installed_on = installed_on
+
+    @classmethod
+    def init(
+        cls,
+        name: str,
+        installed_on: datetime,
+        id: Optional[UUID] = None,
+    ) -> "Sensor":
+        if not id:
+            id = uuid4()
+
+        return cls(id, name, installed_on)
+
+    def dict(self) -> NormalDict:
+        return {
+            "id": self._id,
+            "name": self._name,
+            "installed_on": self._installed_on,
+        }
 
 
 class User(Entity):
@@ -333,6 +359,17 @@ def test_entity_eq():
     assert Vehicle.init("green") == Vehicle.init("green")
 
 
+def test_entity_hash_uuid_datetime():
+    sensor = Sensor.init(
+        "Humidity",
+        datetime.now(),
+    )
+
+    # This checks that the json serialize used by Entity.__hash__ supports
+    # datetime.datetime and UUID
+    assert isinstance(hash(sensor), int)
+
+
 def test_entity_repr():
     user = User.init("Gemma G")
     id = user.id
@@ -344,3 +381,132 @@ def test_entity_repr_no_properties():
     vehicle = Vehicle.init("red")
 
     assert vehicle.__repr__() == f"Vehicle()"
+
+
+# Test using a custom serializer for hashing
+# A custom serializer is necessary for types not supported by `orjson`
+
+
+class Astronaut(Entity):
+    def __init__(self, id: UUID, name: str):
+        self._id = id
+        self._name = name
+
+    @classmethod
+    def init(cls, name: str, id: Optional[UUID] = None) -> "Astronaut":
+        if not id:
+            id = uuid4()
+
+        return cls(id, name)
+
+    def dict(self) -> NormalDict:
+        return {
+            "id": self._id,
+            "name": self._name,
+        }
+
+
+class RocketType:
+    def __init__(self, name: str):
+        if name not in ["falcon_9", "falcon_heavy", "starship"]:
+            raise ValueError(f"Unknown rocket type {name!r}")
+
+        self._name = name
+
+    def __str__(self) -> str:
+        return self._name
+
+
+class SpaceDomainSerializer:
+    def __call__(self, obj: Any) -> Any:
+        if isinstance(obj, Astronaut):
+            return obj.dict()
+        elif isinstance(obj, RocketType):
+            return str(obj)
+
+        raise TypeError
+
+
+class Rocket(AggregateRoot, Entity):
+    def __init__(self, name: str, rocket_type: RocketType, astronauts: List[Astronaut]):
+        super().__init__()
+        self._astronauts = astronauts
+        self._name = name
+        self._rocket_type = rocket_type
+
+    @classmethod
+    def init(
+        cls,
+        name: str,
+        rocket_type: RocketType,
+        astronauts: Optional[List[Astronaut]] = None,
+    ) -> "Rocket":
+        return cls(
+            name,
+            rocket_type,
+            astronauts or [],
+        )
+
+    def dict(self) -> NormalDict:
+        return {
+            "name": self._name,
+            "rocket_type": self._rocket_type,
+            "astronauts": self._astronauts,
+        }
+
+
+class SpaceShip(AggregateRoot, Entity, default_json_serializer=SpaceDomainSerializer):
+    def __init__(self, name: str, rocket_type: RocketType, astronauts: List[Astronaut]):
+        super().__init__()
+        self._astronauts = astronauts
+        self._name = name
+        self._rocket_type = rocket_type
+
+    @classmethod
+    def init(
+        cls,
+        name: str,
+        rocket_type: RocketType,
+        astronauts: Optional[List[Astronaut]] = None,
+    ) -> "SpaceShip":
+        return cls(
+            name,
+            rocket_type,
+            astronauts or [],
+        )
+
+    def dict(self) -> NormalDict:
+        return {
+            "name": self._name,
+            "rocket_type": self._rocket_type,
+            "astronauts": self._astronauts,
+        }
+
+
+def _set_up_deps() -> Tuple[Astronaut, RocketType]:
+    astronaut = Astronaut.init("Albert II")
+    rocket_type = RocketType("falcon_9")
+
+    return astronaut, rocket_type
+
+
+def test_entity_hash_custom_serializer():
+    astronaut, rocket_type = _set_up_deps()
+    space_ship = SpaceShip.init("Explorer", rocket_type, [astronaut])
+
+    json = (
+        '{"name":"Explorer","rocket_type":"falcon_9",'
+        '"astronauts":[{"id":"%s","name":"Albert II"}]}'
+    ) % (str(astronaut.dict()["id"]))
+
+    assert space_ship.json().decode("utf-8") == json
+    assert isinstance(hash(space_ship), int)
+
+
+def test_entity_no_custom_serializer_type_error():
+    """Not using a custom serializer will raise a type error upon trying to hash"""
+    astronaut, rocket_type = _set_up_deps()
+    rocket = Rocket.init("Explorer", rocket_type, [astronaut])
+
+    with pytest.raises(TypeError):
+        hash(rocket)
