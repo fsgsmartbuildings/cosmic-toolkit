@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.4.2] - 06 January 2021
+### Added
+- Implemented `lru_cache` for `MessageBus._get_handlers_for_event()` and
+  `MessageBus._resolve_dependencies()` to reduce redundant calls.
+
 ## [0.4.1] - 20 November 2020
 ### Added
 - `.json()` method to `Entity`
