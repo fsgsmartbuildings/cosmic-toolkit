@@ -23,10 +23,15 @@ class MessageBus:
         # If True, RuntimeError will not be raised if there are no handlers for an
         # event
         self._ignore_missing_handlers = ignore_missing_handlers
-
-        # Cache size for internal event handler and dependency methods
-        self._lru_cache_size = lru_cache_size
         self._unit_of_work_kwarg_name = unit_of_work_kwarg_name
+
+        # LRU caching
+        self._cached_get_handlers_for_event = lru_cache(lru_cache_size)(
+            self._get_handlers_for_event
+        )
+        self._cached_resolve_dependencies = lru_cache(lru_cache_size)(
+            self._resolve_dependencies
+        )
 
     @property
     def dependencies(self) -> Dict[str, Any]:
@@ -80,17 +85,13 @@ class MessageBus:
             # _ignore_missing_handlers dictates the functionality when this happens
             # Default is to raise RuntimeError but event can be ignored by instantiating
             # message bus with ignore_missing_handlers=True
-            handlers = lru_cache(self._lru_cache_size)(self._get_handlers_for_event)(
-                event.__class__
-            )
+            handlers = self._cached_get_handlers_for_event(event.__class__)
         except RuntimeError:
             if not self._ignore_missing_handlers:
                 raise
 
         for handler in handlers:
-            args, kwargs = lru_cache(self._lru_cache_size)(self._resolve_dependencies)(
-                handler, **dependencies
-            )
+            args, kwargs = self._cached_resolve_dependencies(handler, **dependencies)
 
             logger.debug("Using %s to handle %s", handler, event)
             await handler(event, *args, **kwargs)
