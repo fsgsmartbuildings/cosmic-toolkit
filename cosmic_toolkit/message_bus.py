@@ -1,4 +1,5 @@
 import logging
+from functools import lru_cache
 from inspect import Parameter, signature
 from typing import Any, Callable, Dict, List, Optional, Tuple, Type
 
@@ -12,14 +13,19 @@ class MessageBus:
         self,
         handlers: Dict[Type[Event], List[Callable]],
         ignore_missing_handlers: Optional[bool] = False,
+        lru_cache_size: Optional[int] = 64,
         unit_of_work_kwarg_name: Optional[str] = "uow",
         **dependencies,
     ):
         self._dependencies = dependencies
         self._handlers = handlers
+
         # If True, RuntimeError will not be raised if there are no handlers for an
         # event
         self._ignore_missing_handlers = ignore_missing_handlers
+
+        # Cache size for internal event handler and dependency methods
+        self._lru_cache_size = lru_cache_size
         self._unit_of_work_kwarg_name = unit_of_work_kwarg_name
 
     @property
@@ -39,17 +45,17 @@ class MessageBus:
             if name != "event"
         }
 
-    def _get_handlers_for_event(self, event: Event) -> List[Callable]:
+    def _get_handlers_for_event(self, event_type: Type[Event]) -> List[Callable]:
         """Return the first list of handlers found for event.
         Searches for handlers using event type and parents' types."""
 
-        for klass in [event.__class__] + [t for t in event.__class__.__bases__]:
+        for klass in [event_type] + [t for t in event_type.__bases__]:
             handlers = self._handlers.get(klass)
 
             if handlers:
                 return handlers
 
-        raise RuntimeError(f"No handlers found for {event.__class__}")
+        raise RuntimeError(f"No handlers found for {event_type}")
 
     def _resolve_dependencies(
         self, handler: Callable, **dependencies
@@ -74,13 +80,17 @@ class MessageBus:
             # _ignore_missing_handlers dictates the functionality when this happens
             # Default is to raise RuntimeError but event can be ignored by instantiating
             # message bus with ignore_missing_handlers=True
-            handlers = self._get_handlers_for_event(event)
+            handlers = lru_cache(self._lru_cache_size)(self._get_handlers_for_event)(
+                event.__class__
+            )
         except RuntimeError:
             if not self._ignore_missing_handlers:
                 raise
 
         for handler in handlers:
-            args, kwargs = self._resolve_dependencies(handler, **dependencies)
+            args, kwargs = lru_cache(self._lru_cache_size)(self._resolve_dependencies)(
+                handler, **dependencies
+            )
 
             logger.debug("Using %s to handle %s", handler, event)
             await handler(event, *args, **kwargs)
