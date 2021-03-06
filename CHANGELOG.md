@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.5.0] - 06 March 2021
+### Changed
+- `pydantic` and `orjson` version requirements eased
+- Changed signature of `AbstractRepository.get()` and `AbstractRepository._get()` to
+  enable greater flexibility
+
+### Fixed
+- Tests workflow was broken due to an issue with a dependency
+
 ## [0.4.2] - 06 January 2021
 ### Added
 - Implemented `lru_cache` for `MessageBus._get_handlers_for_event()` and
