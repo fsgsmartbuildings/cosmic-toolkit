@@ -9,11 +9,12 @@ with open("README.md", "r", encoding="utf-8") as f:
 setup(
     name="cosmic-toolkit",
     version=VERSION,
+    description="Domain-Driven Design (DDD) toolkit to quickly develop complex apps",
     long_description=readme,
     long_description_content_type="text/markdown",
     install_requires=[
-        "orjson==3.4.3",
-        "pydantic==1.7.1",
+        "orjson>=3.4",
+        "pydantic>=1.7",
     ],
     packages=find_packages(),
     python_requires=">=3.7",
