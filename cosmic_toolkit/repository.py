@@ -28,8 +28,8 @@ class AbstractRepository(metaclass=ABCMeta):
         await self._add(entity)
         self.seen.add(entity)
 
-    async def get(self, id: Any) -> AggregateRoot:
-        entity = await self._get(id)
+    async def get(self, *args: Any, **kwargs: Any) -> AggregateRoot:
+        entity = await self._get(*args, **kwargs)
 
         if entity:
             self.seen.add(entity)
@@ -47,7 +47,7 @@ class AbstractRepository(metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    async def _get(self, id: str) -> AggregateRoot:
+    async def _get(self, *args: Any, **kwargs: Any) -> AggregateRoot:
         ...
 
     @abstractmethod
