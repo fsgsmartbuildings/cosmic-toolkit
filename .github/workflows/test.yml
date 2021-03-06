@@ -22,10 +22,10 @@ jobs:
           pip install -r test-requirements.txt
 
       - name: Check formatting
-          run: nox --non-interactive -e format -- --check
+        run: nox --non-interactive -e format -- --check
 
       - name: Run linter
-          run: nox --non-interactive -e lint
+        run: nox --non-interactive -e lint
 
       - name: Test
         run: nox --non-interactive -e test
