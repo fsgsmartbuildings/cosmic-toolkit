@@ -50,6 +50,8 @@ class AbstractRepository(metaclass=ABCMeta):
     async def _get(self, *args: Any, **kwargs: Any) -> AggregateRoot:
         ...
 
-    @abstractmethod
+    async def _remove(self, entity: AggregateRoot):
+        raise NotImplementedError
+
     async def _update(self, entity: AggregateRoot):
-        ...
+        raise NotImplementedError
