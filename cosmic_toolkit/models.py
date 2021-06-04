@@ -1,8 +1,11 @@
 import inspect
+import json
 from abc import ABCMeta, abstractmethod
+from datetime import datetime
+from decimal import Decimal
 from typing import Any, Generator, List, Optional, Type
+from uuid import UUID
 
-from orjson import dumps
 from pydantic import BaseModel
 
 from cosmic_toolkit.types import JSONSerializer, NormalDict
@@ -27,8 +30,17 @@ class AggregateRoot:
         self._events.append(event)
 
 
-class DefaultSerializer:
+class DefaultJSONSerializer:
+    """Default JSON Serializer"""
+
     def __call__(self, obj: Any):
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+        elif isinstance(obj, Decimal):
+            return str(obj)
+        elif isinstance(obj, UUID):
+            return str(obj)
+
         raise TypeError
 
 
@@ -45,7 +57,9 @@ class Entity(metaclass=ABCMeta):
         cls, default_json_serializer: Optional[Type[JSONSerializer]] = None, **kwargs
     ):
         cls._default_json_serializer = (
-            default_json_serializer if default_json_serializer else DefaultSerializer
+            default_json_serializer
+            if default_json_serializer
+            else DefaultJSONSerializer
         )
 
     def __repr__(self) -> str:
@@ -91,8 +105,8 @@ class Entity(metaclass=ABCMeta):
     def dict(self) -> NormalDict:
         ...
 
-    def json(self) -> bytes:
-        return dumps(self.dict(), default=self._default_json_serializer())
+    def json(self) -> str:
+        return json.dumps(self.dict(), default=self._default_json_serializer())
 
     class DoesNotExist(Exception):
         ...
