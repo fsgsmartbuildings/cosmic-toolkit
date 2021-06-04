@@ -13,8 +13,8 @@ setup(
     long_description=readme,
     long_description_content_type="text/markdown",
     install_requires=[
-        "orjson>=3.4",
-        "pydantic>=1.7",
+        "orjson>=3.5.3",
+        "pydantic>=1.8.2",
     ],
     packages=find_packages(),
     python_requires=">=3.7",
