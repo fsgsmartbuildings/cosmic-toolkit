@@ -4,7 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [0.5.1]
+## [0.6.0] - 04 June 2021
+### Changed
+- Remove orjson dependency and use built-in json encoder
+
+## [0.5.1] - 04 June 2021
 ### Changed
 - Update dependencies to latest versions
 
