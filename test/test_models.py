@@ -5,7 +5,7 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from cosmic_toolkit import AggregateRoot, Entity, Event
+from cosmic_toolkit import AggregateRoot, DefaultJSONSerializer, Entity, Event
 from cosmic_toolkit.types import NormalDict
 
 # Aggregates consist of one or more child entities
@@ -384,7 +384,7 @@ def test_entity_repr_no_properties():
 
 
 # Test using a custom serializer for hashing
-# A custom serializer is necessary for types not supported by `orjson`
+# A custom serializer is necessary for types not supported by the json serializer
 
 
 class Astronaut(Entity):
@@ -417,14 +417,14 @@ class RocketType:
         return self._name
 
 
-class SpaceDomainSerializer:
+class SpaceDomainSerializer(DefaultJSONSerializer):
     def __call__(self, obj: Any) -> Any:
         if isinstance(obj, Astronaut):
             return obj.dict()
         elif isinstance(obj, RocketType):
             return str(obj)
-
-        raise TypeError
+        else:
+            return super().__call__(obj)
 
 
 class Rocket(AggregateRoot, Entity):
@@ -495,11 +495,11 @@ def test_entity_hash_custom_serializer():
     space_ship = SpaceShip.init("Explorer", rocket_type, [astronaut])
 
     json = (
-        '{"name":"Explorer","rocket_type":"falcon_9",'
-        '"astronauts":[{"id":"%s","name":"Albert II"}]}'
+        '{"name": "Explorer", "rocket_type": "falcon_9", '
+        '"astronauts": [{"id": "%s", "name": "Albert II"}]}'
     ) % (str(astronaut.dict()["id"]))
 
-    assert space_ship.json().decode("utf-8") == json
+    assert space_ship.json() == json
     assert isinstance(hash(space_ship), int)
 
 
