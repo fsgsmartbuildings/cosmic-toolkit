@@ -25,5 +25,6 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
     ],
-    keywords="cosmic,messagebus,domain driven design,clean architecture"
+    keywords="cosmic,messagebus,domain driven design,clean architecture",
+    url="https://github.com/fsgsmartbuildings/cosmic-toolkit",
 )
