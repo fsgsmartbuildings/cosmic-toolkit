@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.6.1] - 03 August 2021
+### Added
+- Github URL to setup.py
+- New publish workflow to build package and distribute to PyPI
+
 ## [0.6.0] - 04 June 2021
 ### Changed
 - Remove orjson dependency and use built-in json encoder
